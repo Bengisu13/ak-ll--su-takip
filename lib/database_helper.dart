@@ -26,24 +26,46 @@ class DatabaseHelper {
 
   Future _createDB(Database db, int version) async {
     await db.execute('''
-CREATE TABLE users(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  surname TEXT,
-  email TEXT
-)
-''');
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        password TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE water (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        amount INTEGER
+      )
+    ''');
   }
 
-  // ✅ kullanıcı ekleme
-  Future insertUser(Map<String, dynamic> row) async {
+  // 🔹 KULLANICI EKLE
+  Future<int> insertUser(String username, String password) async {
     final db = await instance.database;
-    return await db.insert('users', row);
+
+    return await db.insert('users', {
+      'username': username,
+      'password': password,
+    });
   }
 
-  // ✅ kullanıcı çekme
-  Future<List<Map<String, dynamic>>> getUsers() async {
+  // 🔹 SU EKLE
+  Future<int> suEkle(int amount) async {
     final db = await instance.database;
-    return await db.query('users');
+
+    return await db.insert('water', {
+      'amount': amount,
+    });
+  }
+
+  // 🔹 TOPLAM SU
+  Future<int> toplamSu() async {
+    final db = await instance.database;
+
+    final result = await db.rawQuery('SELECT SUM(amount) as total FROM water');
+
+    return result.first['total'] == null ? 0 : result.first['total'] as int;
   }
 }
